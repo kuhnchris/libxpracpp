@@ -1,4 +1,3 @@
-#include "./utils.hpp"
 #include <arpa/inet.h> //inetaddr
 #include <boost/any.hpp>
 #include <fstream>
@@ -175,7 +174,7 @@ void sendHello(int sockfd) {
   l.push_back("hello"s);
   l.push_back(dict);
 
-  encode(l, buf3);
+  rencodeplus::encode::encode(l, buf3);
   // printf("encoded: %s",buf3.c_str());
   printf("rencoded: ( %lu bytes )...\n", buf3.size());
 
@@ -196,13 +195,13 @@ void sendHello(int sockfd) {
   memcpy(&buf[8], buf2, buf2size);
   std::cout << "uncompressed..."
             << "\n";
-  writeToFile("uncompressed", string(buf3));
+  rencodeplus::utils::writeToFile("uncompressed", string(buf3));
   std::cout << "compressed..."
             << "\n";
-  writeToFile("compressed.z", string(buf2, buf2size));
+  rencodeplus::utils::writeToFile("compressed.z", string(buf2, buf2size));
   std::cout << "packet..."
             << "\n";
-  writeToFile("packet.z", string(buf, bufSizeSend));
+  rencodeplus::utils::writeToFile("packet.z", string(buf, bufSizeSend));
 
   send(sockfd, buf, bufSizeSend + 8, 0);
   printf("sent payload ( %d + 8 )...\n", bufSizeSend);
@@ -219,7 +218,7 @@ void _thread_loop(int sockfd) {
     unsigned long bufread = recv(sockfd, &buf, 1024, 0);
     if (bufread > 0) {
       printf("received (packed): ( %lu ) %s\n", bufread, buf);
-      writeToFile("hello-reply.bin", string(buf, bufread));
+      rencodeplus::utils::writeToFile("hello-reply.bin", string(buf, bufread));
       boost::any outObject;
       unsigned char unbuf[1024] = {0};
       unsigned long unbuf_size;
@@ -231,8 +230,8 @@ void _thread_loop(int sockfd) {
         printf("Uncompress failed: %s\n", zError(zcompressOK));
         if (bufread >= 8) {
           string sIn = string(&buf[8], bufread);
-          decode(sIn, outObject);
-          outputDataStructure(outObject, 0);
+          rencodeplus::decode::decode(sIn, outObject);
+          rencodeplus::utils::outputDataStructure(outObject, 0);
           std::cout << "\n";
         } else {
           std::cout << "packet was: " << buf << "\n";
@@ -241,8 +240,8 @@ void _thread_loop(int sockfd) {
         // int zcompressOK = compress2(buf2, &buf2size, buf3.c_str(),
         // buf3.size(), 0);
         string sIn = string(unbuf, unbuf_size);
-        decode(sIn, outObject);
-        outputDataStructure(outObject, 0);
+        rencodeplus::decode::decode(sIn, outObject);
+        rencodeplus::utils::outputDataStructure(outObject, 0);
         std::cout << "\n";
       }
     }
