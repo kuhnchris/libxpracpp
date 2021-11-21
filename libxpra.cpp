@@ -23,7 +23,7 @@ namespace libxpra {
     namespace functions {
         int packetNumber = 0;
 
-        std::string generateFilename(){
+        std::string generateFilename(const char* postfix){
             // Get current date/time, format is YYYY-MM-DD.HH:mm:ss
             time_t     now = time(0);
             struct tm  tstruct;
@@ -33,7 +33,7 @@ namespace libxpra {
             // for more information about date/time format
             strftime(buf, sizeof(buf), "%Y%m%d_%H%M%S_", &tstruct);
             strcat(buf, std::to_string(packetNumber).c_str());
-            strcat(buf, ".cap");
+            strcat(buf, postfix);
             packetNumber++;
             return buf;
 
@@ -46,7 +46,7 @@ namespace libxpra {
             unbuf = (unsigned char *)malloc(bufferSize * 1024);
             unsigned long unbuf_size = bufferSize * 1024;
             unsigned long buf_size = bufferSize;
-            writeToFile(generateFilename(), string(packetContent, bufferSize));
+            writeToFile(generateFilename(".cap"), string(packetContent, bufferSize));
             if (packetContent[0] == 'P') {
                 std::cout << "Package has header char\n";
                 int zcompressOK = uncompress(unbuf, &unbuf_size,
@@ -69,6 +69,7 @@ namespace libxpra {
                     }
                 } else {
                     string sIn = string(unbuf, unbuf_size);
+                    writeToFile(generateFilename(".ungziped.cap"), sIn);
                     rencodeplus::decode::decode(sIn, outObject);
                 }
             } else {
