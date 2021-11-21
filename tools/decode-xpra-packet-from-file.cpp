@@ -1,3 +1,4 @@
+#include "../libxpra.h"
 #include <boost/any.hpp>
 #include <cstddef>
 #include <fstream>
@@ -10,6 +11,7 @@
 #include <zconf.h>
 #include <zlib.h>
 
+/*
 int decode_file(std::string filename, bool forceDecompress) {
     string ostr;
     boost::any outObjStrBin;
@@ -30,14 +32,12 @@ int decode_file(std::string filename, bool forceDecompress) {
                       << "\n";
             unsigned char *uncompr;
             unsigned long rSize = readSize;
-            unsigned long tSize = readSize * 2;
+            unsigned long tSize = readSize * 1024;
             uncompr = (unsigned char *)malloc(tSize * sizeof(char));
-            int zUncompressError = uncompress2(uncompr, &tSize, strbindata, &rSize);
-            if (zUncompressError != Z_OK) {
-                printf("Compression failed: %s\n", zError(zUncompressError));
-                return -1;
-            } else {
-                std::cout << "Uncompressing done." << "\n";
+            int zUncompressError = uncompress2(uncompr, &tSize, strbindata,
+&rSize); if (zUncompressError != Z_OK) { printf("Compression failed: %s\n",
+zError(zUncompressError)); return -1; } else { std::cout << "Uncompressing
+done." << "\n";
             }
             strbindata = uncompr;
             readSize = tSize;
@@ -51,7 +51,7 @@ int decode_file(std::string filename, bool forceDecompress) {
         return 1;
     }
     return 0;
-}
+}*/
 
 bool findArgv(int argc, char **argv, const char *option) {
     for (int i = 1; i < argc; i++) {
@@ -61,9 +61,9 @@ bool findArgv(int argc, char **argv, const char *option) {
     }
     return false;
 }
-char* GetArgvWithout(int argc, char **argv, const char *option) {
+char *GetArgvWithout(int argc, char **argv, const char *option) {
     for (int i = 1; i < argc; i++) {
-        if (strncmp(argv[i], option, strlen(option)) == 0) {
+        if (strncmp(argv[i], option, strlen(option)) != 0) {
             return argv[i];
         }
     }
@@ -94,7 +94,15 @@ int main(int argc, char **argv) {
             printUsage(argv);
             return 0;
         } else {
-            decode_file(GetArgvWithout(argc,argv,"-"), forceDecompress);
+            // decode_file(GetArgvWithout(argc,argv,"-"), forceDecompress);
+
+            int readSize;
+            unsigned char *strbindata = rencodeplus::utils::readBinaryData(
+                GetArgvWithout(argc, argv, "-"), readSize);
+            boost::any d =
+                libxpra::functions::decodePacket(strbindata, readSize);
+            rencodeplus::utils::outputDataStructure(d, 0);
+            std::cout << "\n";
         }
     } else {
         printUsage(argv);

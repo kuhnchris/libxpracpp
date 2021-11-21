@@ -1,5 +1,7 @@
 build
 .vscode/
 **.s
+data/
+new.txt
 xpra-c
 decode-xpra-packet-from-file
